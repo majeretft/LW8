@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Лабораторная работа №7</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container py-5">
+      <h1>Лабораторная работа №7</h1>
+      <p class="lead mb-4">
+        <b>Задание:</b>
+        <br />
+        <span>
+          Написать ĸлиент серверное приложение с использованием express на
+          сервере, чистого JS на ĸлиенте и node-telegram-bot-api на сервере
+          телеграм бота.
+        </span>
+        <br />
+        <span>
+          Списоĸ дел. Web + Telegram. CRUD + списоĸ выполненных и не выполненных
+          дел.
+        </span>
+      </p>
+      <h3>Список дел</h3>
+      <ul class="nav nav-tabs" id="myTab">
+        <li class="nav-item">
+          <button
+            class="nav-link active"
+            id="new-notes-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#new-notes-tab-pane"
+            type="button"
+          >
+            Новые заметки
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            id="finished-notes-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#finished-notes-pane"
+            type="button"
+          >
+            Архив
+          </button>
+        </li>
+      </ul>
+      <div
+        class="tab-content p-3 border border-top-0 rounded-bottom mb-3"
+        id="myTabContent"
+      >
+        <div
+          class="tab-pane fade show active"
+          id="new-notes-tab-pane"
+          tabindex="0"
+        >
+          <!-- CARD -->
+          <div class="notes-container" id="new-note-container"></div>
+          <!-- CARD -->
+        </div>
+        <div class="tab-pane fade" id="finished-notes-pane">
+          <!-- CARD -->
+          <div class="notes-container" id="finished-note-container"></div>
+          <!-- CARD -->
+        </div>
+      </div>
+
+      <!-- Button trigger modal -->
+      <button
+        type="button"
+        class="btn btn-primary"
+        id="create-new-note"
+      >
+        Создать заметку
+      </button>
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      data-bs-backdrop="static"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <input type="hidden" id="modal-id" />
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Создание заметки</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="exampleFormControlInput1" class="form-label">
+                Заголовок
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Заголовок заметки"
+                id="modal-caption"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="exampleFormControlTextarea1" class="form-label">
+                Текст
+              </label>
+              <textarea
+                class="form-control"
+                rows="3"
+                placeholder="Текст заметки"
+                id="modal-content"
+              ></textarea>
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value=""
+                  id="modal-isfinished"
+                />
+                <label class="form-check-label" for="modal-isfinished">
+                  Завершена
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Отмена
+            </button>
+            <button type="button" class="btn btn-primary" id="modal-save">
+              Сохранить
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD -->
+    <template id="new-note-template">
+      <div class="card">
+        <input type="hidden" name="id" />
+        <div class="card-header">Новая заметка</div>
+        <div class="card-body">
+          <h5 class="card-title">Заголовок заметки</h5>
+          <p class="card-text">Текстовое описание заметки</p>
+          <button type="button" class="btn btn-primary" name="note-complete">
+            Завершить
+          </button>
+          <button type="button" class="btn btn-primary" name="note-edit">
+            Редактировать
+          </button>
+          <button type="button" class="btn btn-danger" name="note-delete">
+            Удалить
+          </button>
+        </div>
+      </div>
+    </template>
+    <!-- CARD -->
+
+    <!-- CARD -->
+    <template id="finished-note-template">
+      <div class="card">
+        <input type="hidden" name="id" />
+        <div class="card-header">Завершенная заметка</div>
+        <div class="card-body">
+          <h5 class="card-title">Заголовок заметки</h5>
+          <p class="card-text">Текстовое описание заметки</p>
+          <button type="button" class="btn btn-danger" name="note-delete">
+            Удалить
+          </button>
+          <button type="button" class="btn btn-primary" name="note-edit">
+            Редактировать
+          </button>
+        </div>
+      </div>
+    </template>
+    <!-- CARD -->
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="script.js"></script>
+  </body>
+</html>

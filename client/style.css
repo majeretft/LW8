@@ -1,0 +1,22 @@
+.notes-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px 20px; /* row-gap column gap */
+}
+
+.notes-container > .card {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .notes-container > .card {
+    width: 48%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .notes-container > .card {
+    width: 32%;
+  }
+}
