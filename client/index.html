@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Лабораторная работа №7</title>
+    <!-- Стили для красоты -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
@@ -63,28 +64,24 @@
           id="new-notes-tab-pane"
           tabindex="0"
         >
-          <!-- CARD -->
+          <!-- Место для вставки карточек заметок -->
           <div class="notes-container" id="new-note-container"></div>
-          <!-- CARD -->
+          <!-- Место для вставки карточек заметок -->
         </div>
         <div class="tab-pane fade" id="finished-notes-pane">
-          <!-- CARD -->
+          <!-- Место для вставки карточек заметок -->
           <div class="notes-container" id="finished-note-container"></div>
-          <!-- CARD -->
+          <!-- Место для вставки карточек заметок -->
         </div>
       </div>
 
-      <!-- Button trigger modal -->
-      <button
-        type="button"
-        class="btn btn-primary"
-        id="create-new-note"
-      >
+      <!-- Кнопка открытия окна новой заметки -->
+      <button type="button" class="btn btn-primary" id="create-new-note">
         Создать заметку
       </button>
     </div>
 
-    <!-- Modal -->
+    <!-- Модальное окно -->
     <div
       class="modal fade"
       id="exampleModal"
@@ -93,6 +90,7 @@
     >
       <div class="modal-dialog">
         <div class="modal-content">
+          <!-- ИД заметки. Если значение задано, то будем обновлять заметку, иначе создавать новую -->
           <input type="hidden" id="modal-id" />
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Создание заметки</h5>
@@ -147,6 +145,7 @@
             >
               Отмена
             </button>
+            <!-- Кнопка сохранения новой или обновления старой заметки -->
             <button type="button" class="btn btn-primary" id="modal-save">
               Сохранить
             </button>
@@ -155,7 +154,7 @@
       </div>
     </div>
 
-    <!-- CARD -->
+    <!-- Шаблон - карточка новой заметки -->
     <template id="new-note-template">
       <div class="card">
         <input type="hidden" name="id" />
@@ -175,9 +174,9 @@
         </div>
       </div>
     </template>
-    <!-- CARD -->
+    <!-- Шаблон - карточка новой заметки -->
 
-    <!-- CARD -->
+    <!-- Шаблон - карточка завершенной заметки -->
     <template id="finished-note-template">
       <div class="card">
         <input type="hidden" name="id" />
@@ -194,8 +193,9 @@
         </div>
       </div>
     </template>
-    <!-- CARD -->
+    <!-- Шаблон - карточка завершенной заметки -->
 
+    <!-- Отвечает за появление и скрытие модального окна -->
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
       crossorigin="anonymous"

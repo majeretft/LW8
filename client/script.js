@@ -1,34 +1,36 @@
 (() => {
   class App {
+    // Ищем на странице кнопки и другие элементы, чтобы не делать этого в каждой функции
     constructor() {
-      this.templateNew = document.querySelector("#new-note-template");
-      this.templateFinished = document.querySelector("#finished-note-template");
-      this.newNoteContainer = document.querySelector("#new-note-container");
+      this.templateNew = document.querySelector("#new-note-template"); // шиблон
+      this.templateFinished = document.querySelector("#finished-note-template"); // шиблон
+      this.newNoteContainer = document.querySelector("#new-note-container"); // место вставки новых заметок
       this.finishedNoteContainer = document.querySelector(
         "#finished-note-container"
-      );
+      ); // место вставки завершенных заметок
 
-      this.modalId = document.querySelector("#modal-id");
-      this.modalCaption = document.querySelector("#modal-caption");
-      this.modalContent = document.querySelector("#modal-content");
-      this.modalFinished = document.querySelector("#modal-isfinished");
-      this.modalSave = document.querySelector("#modal-save");
+      this.modalId = document.querySelector("#modal-id"); // модальное окно
+      this.modalCaption = document.querySelector("#modal-caption"); // текстовое поле в модальном окне
+      this.modalContent = document.querySelector("#modal-content"); // текстовое поле в модальном окне
+      this.modalFinished = document.querySelector("#modal-isfinished"); // флажок в модальном окне
+      this.modalSave = document.querySelector("#modal-save"); // кнопка сохранить в модальном окне
 
-      this.createNewNote = document.querySelector("#create-new-note");
-      this.createNote.bind(this);
-      this.createNewNote.onclick = this.createNote;
+      this.createNewNote = document.querySelector("#create-new-note"); // кнопка создания новой заметки
+      this.createNote.bind(this); // закрепляем this, чтобы при вызове внутри события this оставался на этом классе
+      this.createNewNote.onclick = this.createNote; // назначаем обработчик события на кнопку
       this.exampleModal = new bootstrap.Modal("#exampleModal", {
         backdrop: "static",
-      });
+      }); // модальное окно для отображения
 
-      this.editNote.bind(this);
-      this.completeNote.bind(this);
-      this.deleteNote.bind(this);
+      this.editNote.bind(this); // закрепляем this, чтобы при вызове внутри события this оставался на этом классе
+      this.completeNote.bind(this); // закрепляем this, чтобы при вызове внутри события this оставался на этом классе
+      this.deleteNote.bind(this); // закрепляем this, чтобы при вызове внутри события this оставался на этом классе
 
-      this.addOrUpdateNewNote.bind(this);
-      this.modalSave.onclick = this.addOrUpdateNewNote;
+      this.addOrUpdateNewNote.bind(this); // закрепляем this, чтобы при вызове внутри события this оставался на этом классе
+      this.modalSave.onclick = this.addOrUpdateNewNote; // назначаем обработчик события на кнопку
     }
 
+    // Получаем все заметки при открытии страницы и добавить их на страницу
     init = () => {
       fetch("/api/get", {
         method: "GET",
@@ -44,6 +46,7 @@
       });
     };
 
+    // Отображаем моальное окно для создания/редактирования заметки
     createNote = () => {
       this.modalId.value = "";
       this.modalCaption.value = "";
@@ -53,6 +56,7 @@
       this.exampleModal.show();
     };
 
+    // Отображаем моальное окно для создания/редактирования заметки
     editNote = (id) => {
       if (!id || !this.notesList[id]) return;
 
@@ -64,6 +68,7 @@
       this.exampleModal.show();
     };
 
+    // Завершить заметку
     completeNote = (id) => {
       if (!id || !this.notesList[id]) return;
 
@@ -88,6 +93,7 @@
       });
     };
 
+    // Удалить заметку
     deleteNote = (id) => {
       if (!id || !this.notesList[id]) return;
 
@@ -101,6 +107,7 @@
       });
     };
 
+    // При загрузке страницы добавляем заметки в раздел новых
     addNewCard = (card) => {
       if (!card) return;
 
@@ -148,6 +155,7 @@
       this.newNoteContainer.appendChild(cardEl.content);
     };
 
+    // При загрузке страницы добавляем заметки в раздел завершенных
     addFinishedCard = (card) => {
       if (!card) return;
 
@@ -185,6 +193,7 @@
       this.finishedNoteContainer.appendChild(cardEl.content);
     };
 
+    // Обновить или создать новую заметку при нажатии кнопки Сохранить в модальном окне
     addOrUpdateNewNote = () => {
       let url = null;
       if (this.modalId.value) {
