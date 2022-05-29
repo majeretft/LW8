@@ -10,6 +10,7 @@ app.use(express.static(path.resolve(process.cwd(), "./client"))); // Перед�
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
+// Получить все заметки
 app.get("/api/get", (req, res) => {
   const data = new Data("1");
   const json = data.getAll();
@@ -17,6 +18,7 @@ app.get("/api/get", (req, res) => {
   res.send(json);
 });
 
+// Получить одну заметку
 app.get("/api/get/:id", (req, res) => {
   const data = new Data("1");
   const json = data.get(req.params["id"]);
@@ -24,6 +26,7 @@ app.get("/api/get/:id", (req, res) => {
   res.send(json);
 });
 
+// Создать одну заметку
 app.post("/api/create", (req, res) => {
   const data = new Data("1");
   data.create(req.body);
@@ -31,6 +34,7 @@ app.post("/api/create", (req, res) => {
   res.redirect("/");
 });
 
+// Обновить одну заметку
 app.post("/api/update", (req, res) => {
   const data = new Data("1");
   data.update(req.body);
@@ -38,13 +42,7 @@ app.post("/api/update", (req, res) => {
   res.redirect("/");
 });
 
-app.post("/api/create", (req, res) => {
-  const data = new Data("1");
-  data.update(req.body);
-
-  res.redirect("/");
-});
-
+// Удалить одну заметку
 app.post("/api/delete/:id", (req, res) => {
   const data = new Data("1");
   data.delete(req.params["id"]);
