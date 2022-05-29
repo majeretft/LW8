@@ -7,11 +7,16 @@
     {
       "type": "pwa-node",
       "request": "launch",
-      "name": "Launch Program",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "name": "SERVER",
+      "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}\\server\\server.js"
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "BOT",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}\\bot\\bot.js"
     }
   ]
 }
