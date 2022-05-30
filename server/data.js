@@ -1,6 +1,6 @@
 const fs = require("fs-extra"); // Используем, чтобы писать меньше текста для работы с текстовыми файлами
 const path = require("path");
-const { v4: uuidv4 } = require('uuid'); // Используем, чтобы не ломать голову с цифрами
+const { v4: uuidv4 } = require("uuid"); // Используем, чтобы не ломать голову с цифрами
 
 const cwd = process.cwd();
 const dataDir = path.resolve(cwd, "./data");
@@ -37,12 +37,9 @@ class Data {
     fs.ensureFileSync(dataPath);
     const json = fs.readJSONSync(dataPath, { throws: false }) || {};
 
-    json[note.id] = {
-      id: note.id,
-      caption: note.caption,
-      content: note.content,
-      isFinished: note.isFinished,
-    };
+    if (note.caption) json[note.id].caption = note.caption;
+    if (note.content) json[note.id].content = note.content;
+    if (typeof note.isFinished === "boolean") json[note.id].isFinished = note.isFinished;
 
     fs.writeJSONSync(dataPath, json, {
       spaces: 2,
