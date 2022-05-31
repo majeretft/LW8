@@ -33,6 +33,11 @@ const authenticateJWT = (req, res, next) => {
         return res.sendStatus(403);
       }
 
+      const userFound = users.find((u) => {
+        return u.name === (user.user || user.name);
+      });
+      if (!userFound) return res.sendStatus(403);
+
       req.user = user;
       if (telegramUserId) req.user.telegramUserId = telegramUserId;
 
@@ -59,7 +64,7 @@ app.post("/api/login", (req, res) => {
 
   if (user) {
     const accessToken = jwt.sign(
-      { user: user.name, role: user.role },
+      { name: user.name, role: user.role },
       accessTokenSecret
     );
 
