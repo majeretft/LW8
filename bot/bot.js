@@ -7,6 +7,23 @@ if (!process.env.BOT_TOKEN) throw "Требуется BOT_TOKEN";
 const urlBase = "http://localhost:3000/api";
 const bot = new Bot(`${process.env.BOT_TOKEN}`);
 
+let token = null;
+const getToken = () => {
+  return axios({
+    url: `${urlBase}/login`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: JSON.stringify({
+      name: "bot",
+      password: "botpassword",
+    }),
+  }).then((res) => {
+    token = res.data.accessToken;
+  });
+};
+
 function initial() {
   return {};
 }
@@ -31,6 +48,11 @@ bot.callbackQuery("button-getnew", async (ctx) => {
   const data = await axios({
     url: `${urlBase}/get`,
     method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${token}`,
+      "telegram-user-id": ctx.from.id,
+    },
   });
   const json = data.data;
 
@@ -38,7 +60,9 @@ bot.callbackQuery("button-getnew", async (ctx) => {
 
   for (let key in json) {
     if (json[key].isFinished) continue;
-    notesListKeyboard.text(`"${json[key].caption}"`, `note=${json[key].id}`).row();
+    notesListKeyboard
+      .text(`"${json[key].caption}"`, `note=${json[key].id}`)
+      .row();
   }
 
   await ctx.reply("Список новых заметок", {
@@ -50,6 +74,10 @@ bot.callbackQuery("button-getfinished", async (ctx) => {
   const data = await axios({
     url: `${urlBase}/get`,
     method: "GET",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "telegram-user-id": ctx.from.id,
+    },
   });
   const json = data.data;
 
@@ -57,7 +85,9 @@ bot.callbackQuery("button-getfinished", async (ctx) => {
 
   for (let key in json) {
     if (!json[key].isFinished) continue;
-    notesListKeyboard.text(`"${json[key].caption}"`, `note=${json[key].id}`).row();
+    notesListKeyboard
+      .text(`"${json[key].caption}"`, `note=${json[key].id}`)
+      .row();
   }
 
   await ctx.reply("Список завершенных заметок", {
@@ -69,6 +99,10 @@ bot.callbackQuery("button-getsingle", async (ctx) => {
   const data = await axios({
     url: `${urlBase}/get`,
     method: "GET",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "telegram-user-id": ctx.from.id,
+    },
   });
   const json = data.data;
 
@@ -101,6 +135,10 @@ bot.callbackQuery(/note=.*/, async (ctx) => {
   const data = await axios({
     url: `${urlBase}/get/${id}`,
     method: "GET",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "telegram-user-id": ctx.from.id,
+    },
   });
   const json = data.data;
 
@@ -129,6 +167,10 @@ bot.callbackQuery(/note-finish=.*/, async (ctx) => {
   const data = await axios({
     url: `${urlBase}/get/${id}`,
     method: "GET",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "telegram-user-id": ctx.from.id,
+    },
   });
   const json = data.data;
 
@@ -139,6 +181,8 @@ bot.callbackQuery(/note-finish=.*/, async (ctx) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      authorization: `Bearer ${token}`,
+      "telegram-user-id": ctx.from.id,
     },
     data: JSON.stringify(json),
   });
@@ -165,12 +209,17 @@ bot.callbackQuery(/note-delete=.*/, async (ctx) => {
   await axios({
     url: `${urlBase}/delete/${id}`,
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${token}`,
+      "telegram-user-id": ctx.from.id,
+    },
   });
 
   await ctx.reply("Заметка удалена. Начните со /start");
 });
 
-const createOrUpdateNote = async (note) => {
+const createOrUpdateNote = async (note, id) => {
   if (!note) return;
 
   let url = `${urlBase}/${note.id ? "update" : "create"}`;
@@ -181,6 +230,8 @@ const createOrUpdateNote = async (note) => {
     data: JSON.stringify(note),
     headers: {
       "Content-Type": "application/json",
+      authorization: `Bearer ${token}`,
+      "telegram-user-id": id,
     },
   });
 };
@@ -197,7 +248,7 @@ bot.on("message", (ctx) => {
         content: array[1],
         isFinished: array.length === 3 && /ДА/i.test(array[2]),
       };
-      createOrUpdateNote(json);
+      createOrUpdateNote(json, ctx.from.id);
       ctx.reply("Заметка создана. Отправьте /start чтобы ее посмотреть");
     } else {
       ctx.reply("Создать заметку не удалось, начните со /start");
@@ -215,7 +266,7 @@ bot.on("message", (ctx) => {
       };
       if (array[2] && /ДА/i.test(array[2])) json.isFinished = true;
       if (array[2] && /НЕТ/i.test(array[2])) json.isFinished = false;
-      createOrUpdateNote(json);
+      createOrUpdateNote(json, ctx.from.id);
       ctx.reply("Заметка изменена. Отправьте /start чтобы ее посмотреть");
     } else {
       ctx.reply("Создать заметку не удалось, начните со /start");
@@ -225,4 +276,6 @@ bot.on("message", (ctx) => {
   }
 });
 
-bot.start();
+getToken().then(() => {
+  bot.start();
+});

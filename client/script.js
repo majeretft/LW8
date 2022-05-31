@@ -35,7 +35,15 @@
       fetch("/api/get", {
         method: "GET",
         credentials: "same-origin",
+        headers: {
+          authorization: `Bearer ${window.sessionStorage.getItem("token")}`,
+        },
       }).then(async (res) => {
+        if (res.status !== 200) {
+          window.location.href = "/login";
+          return;
+        }
+
         const json = await res.json();
         this.notesList = json;
         for (let key in json) {
@@ -87,6 +95,7 @@
         body: JSON.stringify(card),
         headers: {
           "Content-Type": "application/json",
+          authorization: `Bearer ${window.sessionStorage.getItem("token")}`,
         },
       }).then((res) => {
         if (res.redirected) window.location.href = res.url;
@@ -102,6 +111,9 @@
       fetch(url, {
         method: "POST",
         credentials: "same-origin",
+        headers: {
+          authorization: `Bearer ${window.sessionStorage.getItem("token")}`,
+        }
       }).then((res) => {
         if (res.redirected) window.location.href = res.url;
       });
@@ -217,6 +229,7 @@
         body: JSON.stringify(card),
         headers: {
           "Content-Type": "application/json",
+          authorization: `Bearer ${window.sessionStorage.getItem("token")}`,
         },
       }).then((res) => {
         if (res.redirected) window.location.href = res.url;
