@@ -106,6 +106,35 @@ app.post("/api/register", (req, res) => {
   });
 });
 
+// Привязать телеграм к пользователю
+app.post("/api/link", authenticateJWT, (req, res) => {
+  if (req.user.role !== "bot") {
+    res.sendStatus(401);
+    return;
+  }
+
+  const { name, password } = req.body;
+  const user = users.find((u) => {
+    return u.name === name && u.password === password;
+  });
+
+  if (!user) {
+    res.json({
+      success: false,
+      message: "Указанный логин или пароль не подходит",
+    });
+    return;
+  }
+
+  user.telegramId = req.user.telegramUserId;
+
+  res.json({
+    success: true,
+    message: "Телеграм привязан успешно",
+    userId: user.id,
+  });
+});
+
 // Получить все заметки
 app.get("/api/get", authenticateJWT, (req, res) => {
   const userId =

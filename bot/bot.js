@@ -35,14 +35,39 @@ const initialKeyboard = new InlineKeyboard()
   .row()
   .text("Создать заметку", "button-create");
 
-bot.command("start", (ctx) =>
-  ctx.reply(
-    "Лабораторная работа №7\nСписоĸ дел. Web + Telegram. CRUD + списоĸ выполненных и не выполненных дел.",
-    {
-      reply_markup: initialKeyboard,
-    }
-  )
+const initialKeyboard2 = new InlineKeyboard().text(
+  "Привязать к уч. записи",
+  "button-link"
 );
+
+bot.command("start", (ctx) => {
+  if (!ctx.session.userId) {
+    ctx.reply(
+      "Лабораторная работа №7\nСписоĸ дел. Web + Telegram. CRUD + списоĸ выполненных и не выполненных дел.\n\n" +
+        "Требуется привязать телеграм к уч. записи на сайте",
+      {
+        reply_markup: initialKeyboard2,
+      }
+    );
+  } else {
+    ctx.reply(
+      "Лабораторная работа №7\nСписоĸ дел. Web + Telegram. CRUD + списоĸ выполненных и не выполненных дел.",
+      {
+        reply_markup: initialKeyboard,
+      }
+    );
+  }
+});
+
+bot.callbackQuery("button-link", async (ctx) => {
+  ctx.session.linkUser = true;
+
+  await ctx.reply(
+    "Привязка пользователя:" +
+      "\n1. На первой строке введите логин от сайта" +
+      "\n2. На второй строке введите пароль от сайта"
+  );
+});
 
 bot.callbackQuery("button-getnew", async (ctx) => {
   const data = await axios({
@@ -51,7 +76,7 @@ bot.callbackQuery("button-getnew", async (ctx) => {
     headers: {
       "Content-Type": "application/json",
       authorization: `Bearer ${token}`,
-      "telegram-user-id": ctx.from.id,
+      "telegram-user-id": ctx.session.userId,
     },
   });
   const json = data.data;
@@ -76,7 +101,7 @@ bot.callbackQuery("button-getfinished", async (ctx) => {
     method: "GET",
     headers: {
       authorization: `Bearer ${token}`,
-      "telegram-user-id": ctx.from.id,
+      "telegram-user-id": ctx.session.userId,
     },
   });
   const json = data.data;
@@ -101,7 +126,7 @@ bot.callbackQuery("button-getsingle", async (ctx) => {
     method: "GET",
     headers: {
       authorization: `Bearer ${token}`,
-      "telegram-user-id": ctx.from.id,
+      "telegram-user-id": ctx.session.userId,
     },
   });
   const json = data.data;
@@ -137,7 +162,7 @@ bot.callbackQuery(/note=.*/, async (ctx) => {
     method: "GET",
     headers: {
       authorization: `Bearer ${token}`,
-      "telegram-user-id": ctx.from.id,
+      "telegram-user-id": ctx.session.userId,
     },
   });
   const json = data.data;
@@ -169,7 +194,7 @@ bot.callbackQuery(/note-finish=.*/, async (ctx) => {
     method: "GET",
     headers: {
       authorization: `Bearer ${token}`,
-      "telegram-user-id": ctx.from.id,
+      "telegram-user-id": ctx.session.userId,
     },
   });
   const json = data.data;
@@ -182,7 +207,7 @@ bot.callbackQuery(/note-finish=.*/, async (ctx) => {
     headers: {
       "Content-Type": "application/json",
       authorization: `Bearer ${token}`,
-      "telegram-user-id": ctx.from.id,
+      "telegram-user-id": ctx.session.userId,
     },
     data: JSON.stringify(json),
   });
@@ -212,7 +237,7 @@ bot.callbackQuery(/note-delete=.*/, async (ctx) => {
     headers: {
       "Content-Type": "application/json",
       authorization: `Bearer ${token}`,
-      "telegram-user-id": ctx.from.id,
+      "telegram-user-id": ctx.session.userId,
     },
   });
 
@@ -236,7 +261,7 @@ const createOrUpdateNote = async (note, id) => {
   });
 };
 
-bot.on("message", (ctx) => {
+bot.on("message", async (ctx) => {
   if (ctx.session.createNewNote) {
     ctx.session.createNewNote = false;
 
@@ -248,7 +273,7 @@ bot.on("message", (ctx) => {
         content: array[1],
         isFinished: array.length === 3 && /ДА/i.test(array[2]),
       };
-      createOrUpdateNote(json, ctx.from.id);
+      createOrUpdateNote(json, ctx.session.userId);
       ctx.reply("Заметка создана. Отправьте /start чтобы ее посмотреть");
     } else {
       ctx.reply("Создать заметку не удалось, начните со /start");
@@ -266,10 +291,35 @@ bot.on("message", (ctx) => {
       };
       if (array[2] && /ДА/i.test(array[2])) json.isFinished = true;
       if (array[2] && /НЕТ/i.test(array[2])) json.isFinished = false;
-      createOrUpdateNote(json, ctx.from.id);
+      createOrUpdateNote(json, ctx.session.userId);
       ctx.reply("Заметка изменена. Отправьте /start чтобы ее посмотреть");
     } else {
       ctx.reply("Создать заметку не удалось, начните со /start");
+    }
+  } else if (ctx.session.linkUser) {
+    ctx.session.linkUser = false;
+    const array = ctx.message.text.split("\n");
+
+    if (array.length === 2) {
+      let json = {
+        name: array[0],
+        password: array[1],
+        telegramUserId: ctx.from.id,
+      };
+
+      const res = await axios({
+        url: `${urlBase}/link`,
+        method: "POST",
+        data: JSON.stringify(json),
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.data.success) ctx.session.userId = res.data.userId;
+
+      ctx.reply(`${res.data.message}. Начните со /start`);
     }
   } else {
     ctx.reply("Начните со /start");
